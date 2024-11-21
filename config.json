@@ -1,0 +1,34 @@
+{
+  "prefix": "!",
+  "ownerID": "958412098164129914",
+  "logChannelID": "1165033136166555699",
+  "welcomeChannelID": "1300386993678712833",
+  "goodbyeChannelID": "1300386994332897372",
+  "doubleXpWeekends": true,
+  "levelRoles": {
+    "5": "L'Explorateur",
+    "10": "L'Enquêteur",
+    "15": "Le Découvreur",
+    "20": "Le Conteneur",
+    "25": "L'Expert",
+    "30": "L'Archiviste",
+    "35": "Le Spécialiste",
+    "40": "Le Maître"
+  },
+  "statsChannels": {
+    "totalMembers": "1300404010301259826",
+    "totalHumans": "1300404018987925517",
+    "totalBots": "1300404027338788985",
+    "totalChannels": "1300404035903291425",
+    "totalRoles": "1300404045936201729"
+  },
+  "xpSettings": {
+    "minXp": 5,
+    "maxXp": 15,
+    "cooldown": 60
+  },
+  "spotify": {
+    "clientID": "731ac5bf0603411f80ac446f5c02e290",
+    "clientSecret": "cd16a34c385b4fa5915abd596fd4e480"
+  }
+}

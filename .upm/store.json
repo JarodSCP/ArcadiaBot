@@ -1,0 +1,1 @@
+{"version":2,"languages":{"nodejs-npm":{"specfileHash":"dc270ed79b4435f25b5f411131c1b3a1","lockfileHash":"ac67691c9fcbf2b2628b2ae7b42de081","guessedImports":["sequelize","dotenv","discord.js","erela.js","play-dl","express","winston"],"guessedImportsHash":"3b7b0003ccaf032125f89cf20491cb26"}}}
