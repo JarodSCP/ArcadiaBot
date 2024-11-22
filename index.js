@@ -1,33 +1,30 @@
 // index.js
-require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
 const { Sequelize } = require('sequelize');
 const winston = require('winston');
-const config = require('./config.json');
 const play = require('play-dl');
 const { Manager } = require('erela.js');
 const voiceStateUpdateHandler = require('./events/voiceStateUpdate');
-
-
+const config = require('./config.js'); // Utilisation du fichier config.js pour le token
 
 // Initialisation de la base de données avec Sequelize
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: path.join(__dirname, 'data', 'levels.sqlite')
+  storage: path.join(__dirname, 'data', 'levels.sqlite'),
 });
 
 // Importation du modèle Level
 const LevelModel = require('./models/Level')(sequelize);
 
-// Configurer les identifiants Spotify à partir de config.json
+// Configurer les identifiants Spotify à partir de config.js
 play.setToken({
   spotify: {
     client_id: config.spotify.clientID,
-    client_secret: config.spotify.clientSecret
-  }
+    client_secret: config.spotify.clientSecret,
+  },
 });
 
 // Fonction pour vérifier et rafraîchir le token Spotify
@@ -50,9 +47,9 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.GuildVoiceStates
+    GatewayIntentBits.GuildVoiceStates,
   ],
-  partials: [Partials.Channel]
+  partials: [Partials.Channel],
 });
 
 // Attacher le modèle Level au client
@@ -66,9 +63,9 @@ client.queue = new Map();
 client.manager = new Manager({
   nodes: [
     {
-      host: "node01.marshalxp.xyz",
+      host: 'node01.marshalxp.xyz',
       port: 443,
-      password: "auto.marshal.co",
+      password: 'auto.marshal.co',
       secure: true,
     },
   ],
@@ -78,12 +75,14 @@ client.manager = new Manager({
   },
 });
 
-client.manager.on("nodeConnect", node => {
+client.manager.on('nodeConnect', (node) => {
   console.log(`Lavalink Node ${node.options.identifier} connecté.`);
 });
 
-client.manager.on("nodeError", (node, error) => {
-  console.error(`Lavalink Node ${node.options.identifier} a rencontré une erreur: ${error.message}`);
+client.manager.on('nodeError', (node, error) => {
+  console.error(
+    `Lavalink Node ${node.options.identifier} a rencontré une erreur: ${error.message}`,
+  );
 });
 
 // Configuration des logs avec Winston
@@ -93,11 +92,11 @@ const logger = winston.createLogger({
     winston.format.timestamp(),
     winston.format.printf(({ timestamp, level, message }) => {
       return `${timestamp} [${level.toUpperCase()}] ${message}`;
-    })
+    }),
   ),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/bot.log' })
+    new winston.transports.File({ filename: 'logs/bot.log' }),
   ],
 });
 
@@ -147,7 +146,9 @@ const commandCategories = fs.readdirSync(commandsPath);
 
 for (const category of commandCategories) {
   const categoryPath = path.join(commandsPath, category);
-  const commandFiles = fs.readdirSync(categoryPath).filter(file => file.endsWith('.js'));
+  const commandFiles = fs.readdirSync(categoryPath).filter((file) =>
+    file.endsWith('.js'),
+  );
   for (const file of commandFiles) {
     const filePath = path.join(categoryPath, file);
     const command = require(filePath);
@@ -155,14 +156,18 @@ for (const category of commandCategories) {
       client.commands.set(command.name, command);
       console.log(`Commande chargée: ${command.name} (${category})`);
     } else {
-      console.warn(`[AVERTISSEMENT] La commande ${file} dans ${category} est mal formatée.`);
+      console.warn(
+        `[AVERTISSEMENT] La commande ${file} dans ${category} est mal formatée.`,
+      );
     }
   }
 }
 
 // Lecture des événements
 const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+const eventFiles = fs.readdirSync(eventsPath).filter((file) =>
+  file.endsWith('.js'),
+);
 
 for (const file of eventFiles) {
   const filePath = path.join(eventsPath, file);
@@ -175,45 +180,52 @@ for (const file of eventFiles) {
   console.log(`Événement chargé: ${event.name}`);
 }
 
-client.on(voiceStateUpdateHandler.name, (...args) => voiceStateUpdateHandler.execute(...args, client));
-
+client.on(voiceStateUpdateHandler.name, (...args) =>
+  voiceStateUpdateHandler.execute(...args, client),
+);
 
 // Synchronisation de la base de données
-sequelize.sync().then(async () => {
-  console.log('Base de données synchronisée.');
+sequelize
+  .sync()
+  .then(async () => {
+    console.log('Base de données synchronisée.');
 
-  // Lecture des données de configuration des rôles
-  const setupDataPath = path.join(__dirname, 'data', 'setupRoleData.json');
-  if (fs.existsSync(setupDataPath)) {
-    const setupData = JSON.parse(fs.readFileSync(setupDataPath));
-    const channel = client.channels.cache.get('ID_DE_VOTRE_CANAL'); // Remplacez par l'ID de votre canal
+    // Lecture des données de configuration des rôles
+    const setupDataPath = path.join(__dirname, 'data', 'setupRoleData.json');
+    if (fs.existsSync(setupDataPath)) {
+      const setupData = JSON.parse(fs.readFileSync(setupDataPath));
+      const channel = client.channels.cache.get('ID_DE_VOTRE_CANAL'); // Remplacez par l'ID de votre canal
 
-    for (const messageId of setupData.messageIds) {
-      try {
-        const message = await channel.messages.fetch(messageId);
-        await message.channel.send({ embeds: message.embeds }); // Renvoie le même embed
-      } catch (error) {
-        console.error(`Erreur lors de la récupération du message ${messageId}:`, error);
+      for (const messageId of setupData.messageIds) {
+        try {
+          const message = await channel.messages.fetch(messageId);
+          await message.channel.send({ embeds: message.embeds }); // Renvoie le même embed
+        } catch (error) {
+          console.error(
+            `Erreur lors de la récupération du message ${messageId}:`,
+            error,
+          );
+        }
       }
     }
-  }
 
-  // Mettre à jour l'heure de démarrage dans le fichier
-  const newBotInfo = { lastStartTime: Date.now() };
-  fs.writeFileSync(botInfoPath, JSON.stringify(newBotInfo, null, 2));
+    // Mettre à jour l'heure de démarrage dans le fichier
+    const newBotInfo = { lastStartTime: Date.now() };
+    fs.writeFileSync(botInfoPath, JSON.stringify(newBotInfo, null, 2));
 
-  client.login(process.env['DISCORD_TOKEN']);
-}).catch(err => {
-  console.error('Erreur de synchronisation de la base de données:', err);
-});
+    client.login(config.token);
+  })
+  .catch((err) => {
+    console.error('Erreur de synchronisation de la base de données:', err);
+  });
 
 // Gestion des erreurs globales
-process.on('unhandledRejection', error => {
+process.on('unhandledRejection', (error) => {
   console.error('Unhandled promise rejection:', error);
   client.logger.error(`Unhandled promise rejection: ${error.message}`);
 });
 
-process.on('uncaughtException', error => {
+process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
   client.logger.error(`Uncaught exception: ${error.message}`);
 });
